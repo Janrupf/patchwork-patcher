@@ -18,7 +18,7 @@ public class PatchworkApplication {
 		@Flag(names = { "h", "help" }, description = "Displays this message")
 		boolean help;
 
-		@Flag(names = "no-color", description = "Disable color on terminal output")
+		@Flag(names = "no-color", description = "Disable colors on terminal output")
 		boolean disableColors;
 	}
 
@@ -58,6 +58,9 @@ public class PatchworkApplication {
 				System.exit(parser.parseSucceeded() ? 0 : 1);
 			}
 		}
+
+		Logger logger = Logger.getInstance();
+
 	}
 
 	private static String getExecutableName() {

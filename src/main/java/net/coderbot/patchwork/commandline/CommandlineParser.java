@@ -1,6 +1,7 @@
 package net.coderbot.patchwork.commandline;
 
 import net.coderbot.patchwork.commandline.types.BooleanTypeMapper;
+import net.coderbot.patchwork.commandline.types.EnumTypeMapper;
 import net.coderbot.patchwork.commandline.types.IntegerTypeMapper;
 import net.coderbot.patchwork.commandline.types.StringTypeMapper;
 
@@ -237,6 +238,11 @@ public class CommandlineParser<T> {
 			Class<?> annotatedType = f.getType();
 
 			if(!TYPE_MAPPERS.containsKey(annotatedType)) {
+				// Check for enums since they are a special case
+				if(f.getType().isEnum()) {
+					return new EnumTypeMapper(argumentHolder, f);
+				}
+
 				// The user has not overridden the class to use and there is no default
 				throw new CommandlineException(
 						"Failed to find type mapper for type " + annotatedType.getName());
