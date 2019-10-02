@@ -48,8 +48,10 @@ public class StreamWriter implements LogWriter {
 
 		if(!LogLevel.WARN.includes(level)) {
 			try {
-				for(byte[] msg : messages) {
-					out.write(msg);
+				synchronized(out) {
+					for(byte[] msg : messages) {
+						out.write(msg);
+					}
 				}
 			} catch(IOException e) {
 				// Simply terminate, logging failed, we can't really "log" the exception
@@ -57,8 +59,10 @@ public class StreamWriter implements LogWriter {
 			}
 		} else {
 			try {
-				for(byte[] msg : messages) {
-					err.write(msg);
+				synchronized(err) {
+					for(byte[] msg : messages) {
+						err.write(msg);
+					}
 				}
 			} catch(IOException e) {
 				// Simply terminate, logging failed, we can't really "log" the exception

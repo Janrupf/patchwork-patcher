@@ -1,17 +1,22 @@
 package net.coderbot.patchwork;
 
-import com.electronwill.nightconfig.core.Config;
 import net.coderbot.patchwork.commandline.CommandlineException;
 import net.coderbot.patchwork.commandline.CommandlineParser;
 import net.coderbot.patchwork.commandline.Flag;
 import net.coderbot.patchwork.logging.LogLevel;
 import net.coderbot.patchwork.logging.Logger;
+import net.coderbot.patchwork.logging.writer.StreamWriter;
 
 import java.io.File;
 import java.net.URL;
 
 import com.electronwill.nightconfig.core.conversion.ObjectBinder;
 import com.electronwill.nightconfig.core.file.FileConfig;
+import com.electronwill.nightconfig.core.Config;
+import net.coderbot.patchwork.tasking.RunnableTask;
+import net.coderbot.patchwork.tasking.Task;
+import net.coderbot.patchwork.tasking.TaskScheduler;
+import org.fusesource.jansi.AnsiConsole;
 
 public class PatchworkApplication {
 	private static class Commandline {
@@ -20,6 +25,12 @@ public class PatchworkApplication {
 
 		@Flag(names = "no-color", description = "Disable colors on terminal output")
 		boolean disableColors;
+
+		@Flag(names = "log-level", description = "The log level to log at the console")
+		LogLevel logLevel = LogLevel.INFO;
+
+		@Flag(names = { "j", "thread-count"}, description = "Amount of threads to use, defaults to available cores")
+		int threadCount = Runtime.getRuntime().availableProcessors();
 	}
 
 	public static void main(String[] args) {
@@ -28,6 +39,7 @@ public class PatchworkApplication {
 		File commandlineToml = new File("patchwork-commandline.toml");
 
 		Commandline commandline = new Commandline();
+		Logger logger = Logger.getInstance();
 		if(commandlineToml.exists()) {
 			System.out.println("Applying commandline from patchwork-commandline.toml");
 			FileConfig config = FileConfig.of(commandlineToml);
@@ -37,6 +49,12 @@ public class PatchworkApplication {
 			// Binding the object and applying the values from the read config will set the fields
 			Config boundConfig = binder.bind(commandline);
 			config.valueMap().forEach(boundConfig::set);
+
+			if(!commandline.disableColors) {
+				AnsiConsole.systemInstall();
+			}
+
+			logger.setWriter(new StreamWriter(!commandline.disableColors, System.out, System.err), commandline.logLevel);
 		} else {
 			CommandlineParser<Commandline> parser = new CommandlineParser<>(commandline, args);
 			try {
@@ -46,6 +64,12 @@ public class PatchworkApplication {
 				e.printStackTrace();
 				System.exit(1);
 			}
+
+			if(!commandline.disableColors) {
+				AnsiConsole.systemInstall();
+			}
+
+			logger.setWriter(new StreamWriter(!commandline.disableColors, System.out, System.err), commandline.logLevel);
 
 			if(!parser.parseSucceeded() || commandline.help) {
 				System.out.println(parser.generateHelpMessage(getExecutableName(),
@@ -59,8 +83,10 @@ public class PatchworkApplication {
 			}
 		}
 
-		Logger logger = Logger.getInstance();
+		TaskScheduler scheduler = new TaskScheduler(commandline.threadCount);
+		scheduler.start();
 
+		scheduler.shutdown(); // This will have to be called by the last task ever run
 	}
 
 	private static String getExecutableName() {
