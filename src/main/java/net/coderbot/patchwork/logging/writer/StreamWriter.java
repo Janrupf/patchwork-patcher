@@ -23,6 +23,8 @@ public class StreamWriter implements LogWriter {
 	private final OutputStream out;
 	private final OutputStream err;
 
+	private final Object writeLock;
+
 	/**
 	 * Constructs a new StreamWriter
 	 *
@@ -34,6 +36,7 @@ public class StreamWriter implements LogWriter {
 		this.color = color;
 		this.out = out;
 		this.err = err;
+		this.writeLock = new Object();
 	}
 
 	@Override
@@ -47,7 +50,7 @@ public class StreamWriter implements LogWriter {
 
 		if(!LogLevel.WARN.includes(level)) {
 			try {
-				synchronized(out) {
+				synchronized(writeLock) {
 					for(byte[] msg : messages) {
 						out.write(msg);
 					}
@@ -58,7 +61,7 @@ public class StreamWriter implements LogWriter {
 			}
 		} else {
 			try {
-				synchronized(err) {
+				synchronized(writeLock) {
 					for(byte[] msg : messages) {
 						err.write(msg);
 					}
