@@ -13,8 +13,6 @@ import java.net.URL;
 import com.electronwill.nightconfig.core.conversion.ObjectBinder;
 import com.electronwill.nightconfig.core.file.FileConfig;
 import com.electronwill.nightconfig.core.Config;
-import net.coderbot.patchwork.tasking.RunnableTask;
-import net.coderbot.patchwork.tasking.Task;
 import net.coderbot.patchwork.tasking.TaskScheduler;
 import org.fusesource.jansi.AnsiConsole;
 

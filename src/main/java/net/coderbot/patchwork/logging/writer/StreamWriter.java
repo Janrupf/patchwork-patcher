@@ -17,8 +17,7 @@ import org.fusesource.jansi.Ansi;
  * Logger backend writing messages to {@link OutputStream}s
  */
 public class StreamWriter implements LogWriter {
-	private static final DateTimeFormatter DATE_TIME_FORMATTER =
-			DateTimeFormatter.ofPattern("HH:mm:ss");
+	private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofLocalizedTime(FormatStyle.MEDIUM);
 
 	private final boolean color;
 	private final OutputStream out;
@@ -115,8 +114,7 @@ public class StreamWriter implements LogWriter {
 					.fgBrightBlack()
 					.a("] ")
 					.fgBrightYellow()
-					.a(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)
-									.format(LocalDateTime.now()))
+					.a(DATE_TIME_FORMATTER.format(LocalDateTime.now()))
 					.fgBrightBlack()
 					.a(": ")
 					.reset()
